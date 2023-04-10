@@ -1,0 +1,260 @@
+
+# PSQL terminal
+
+####You should rename the weight column to atomic_mass
+
+periodic_table=> SELECT * FROM properties;
+ atomic_number |   type    |  weight   | melting_point | boiling_point 
+---------------+-----------+-----------+---------------+---------------
+             1 | nonmetal  |  1.008000 |        -259.1 |        -252.9
+             2 | nonmetal  |  4.002600 |        -272.2 |          -269
+             3 | metal     |  6.940000 |        180.54 |          1342
+             4 | metal     |  9.012200 |          1287 |          2470
+             5 | metalloid | 10.810000 |          2075 |          4000
+             6 | nonmetal  | 12.011000 |          3550 |          4027
+             7 | nonmetal  | 14.007000 |        -210.1 |        -195.8
+             8 | nonmetal  | 15.999000 |          -218 |          -183
+          1000 | metalloid |  1.000000 |            10 |           100
+(9 rows)
+
+periodic_table=> ALTER TABLE properties RENAME COLUMN weight TO atomic_mass;
+
+####You should rename the melting_point column to melting_point_celsius and the boiling_point column to boiling_point_celsius
+
+periodic_table=> ALTER TABLE properties RENAME COLUMN melting_point TO melting_point_celsius;
+
+periodic_table=> ALTER TABLE properties RENAME COLUMN boiling_point TO boiling_point_celsius;
+
+####Your melting_point_celsius and boiling_point_celsius columns should not accept null values
+
+periodic_table=> ALTER TABLE properties ALTER COLUMN melting_point_celsius SET NOT NULL;
+periodic_table=> ALTER TABLE properties ALTER COLUMN boiling_point_celsius SET NOT NULL;
+
+periodic_table=> \d properties
+                           Table "public.properties"
+        Column         |         Type          | Collation | Nullable | Default 
+-----------------------+-----------------------+-----------+----------+---------
+ atomic_number         | integer               |           | not null | 
+ type                  | character varying(30) |           |          | 
+ atomic_mass           | numeric(9,6)          |           | not null | 
+ melting_point_celsius | numeric               |           | not null | 
+ boiling_point_celsius | numeric               |           | not null | 
+
+    "properties_pkey" PRIMARY KEY, btree (atomic_number)
+    "properties_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+
+
+####You should add the UNIQUE constraint to the symbol and name columns from the elements table
+periodic_table=> ALTER TABLE elements ADD CONSTRAINT unique_symbol UNIQUE(symbol);
+periodic_table=> ALTER TABLE elements ADD CONSTRAINT unique_name UNIQUE(name);
+ALTER TABLE
+periodic_table=> \d elements
+                        Table "public.elements"
+    Column     |         Type          | Collation | Nullable | Default 
+---------------+-----------------------+-----------+----------+---------
+ atomic_number | integer               |           | not null | 
+ symbol        | character varying(2)  |           |          | 
+ name          | character varying(40) |           |          | 
+Indexes:
+    "elements_pkey" PRIMARY KEY, btree (atomic_number)
+    "elements_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+    "unique_name" UNIQUE CONSTRAINT, btree (name)
+    "unique_symbol" UNIQUE CONSTRAINT, btree (symbol)
+
+#####Your symbol and name columns should have the NOT NULL constraint
+periodic_table=> ALTER TABLE elements ALTER COLUMN symbol SET NOT NULL;
+periodic_table=> ALTER TABLE elements ALTER COLUMN name SET NOT NULL;
+periodic_table=> \d elements
+                        Table "public.elements"
+    Column     |         Type          | Collation | Nullable | Default 
+---------------+-----------------------+-----------+----------+---------
+ atomic_number | integer               |           | not null | 
+ symbol        | character varying(2)  |           | not null | 
+ name          | character varying(40) |           | not null | 
+Indexes:
+    "elements_pkey" PRIMARY KEY, btree (atomic_number)
+    "elements_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+    "unique_name" UNIQUE CONSTRAINT, btree (name)
+    "unique_symbol" UNIQUE CONSTRAINT, btree (symbol)
+
+####You should set the atomic_number column from the properties table as a foreign key that references the column of the same name in the elements table
+periodic_table=> ALTER TABLE properties ADD FOREIGN KEY(atomic_number) REFERENCES elements(atomic_number);
+ALTER TABLE
+periodic_table=> \d properties
+                           Table "public.properties"
+        Column         |         Type          | Collation | Nullable | Default 
+-----------------------+-----------------------+-----------+----------+---------
+ atomic_number         | integer               |           | not null | 
+ type                  | character varying(30) |           |          | 
+ atomic_mass           | numeric(9,6)          |           | not null | 
+ melting_point_celsius | numeric               |           | not null | 
+ boiling_point_celsius | numeric               |           | not null | 
+Indexes:
+    "properties_pkey" PRIMARY KEY, btree (atomic_number)
+    "properties_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+Foreign-key constraints:
+    "properties_atomic_number_fkey" FOREIGN KEY (atomic_number) REFERENCES elements(atomic_number)
+
+####You should create a types table that will store the three types of elements
+periodic_table=> CREATE TABLE types();
+CREATE TABLE
+periodic_table=> \d
+             List of relations
+ Schema |    Name    | Type  |    Owner     
+--------+------------+-------+--------------
+ public | elements   | table | freecodecamp
+ public | properties | table | freecodecamp
+ public | types      | table | freecodecamp
+(3 rows)
+
+####Your types table should have a type_id column that is an integer and the primary key
+periodic_table=> ALTER TABLE types ADD COLUMN type_id SERIAL NOT NULL;
+ALTER TABLE
+
+####Your types table should have a type column that is a VARCHAR and cannot be null. It will store the different types from the type column in the properties table
+periodic_table=> ALTER TABLE types ADD COLUMN type VARCHAR NOT NULL;
+ALTER TABLE
+pperiodic_table=> \d types
+                                    Table "public.types"
+ Column  |       Type        | Collation | Nullable |                Default                 
+---------+-------------------+-----------+----------+----------------------------------------
+ type    | character varying |           | not null | 
+ type_id | integer           |           | not null | nextval('types_type_id_seq'::regclass)periodic_table=> ALTER TABLE types ADD COLUMN type_id INT PRIMARY KEY;
+
+
+####You should add three rows to your types table whose values are the three different types from the properties table
+periodic_table=> INSERT INTO types(type) VALUES('metal'),('nonmetal'),('metalloid');
+INSERT 0 3
+periodic_table=> SELECT * FROM types;
+   type    | type_id 
+-----------+---------
+ metal     |       1
+ nonmetal  |       2
+ metalloid |       3
+(3 rows)
+####Your properties table should have a type_id foreign key column that references the type_id column from the types table. It should be an INT with the NOT NULL constraint
+periodic_table=> ALTER TABLE properties ADD COLUMN type_id INT;
+ALTER TABLE
+periodic_table=> SELECT * FROM properties ;
+ atomic_number |   type    | atomic_mass | melting_point_celsius | boiling_point_celsius | type_id 
+---------------+-----------+-------------+-----------------------+-----------------------+---------
+             1 | nonmetal  |    1.008000 |                -259.1 |                -252.9 |        
+             2 | nonmetal  |    4.002600 |                -272.2 |                  -269 |        
+             3 | metal     |    6.940000 |                180.54 |                  1342 |        
+             4 | metal     |    9.012200 |                  1287 |                  2470 |        
+             5 | metalloid |   10.810000 |                  2075 |                  4000 |        
+             6 | nonmetal  |   12.011000 |                  3550 |                  4027 |        
+             7 | nonmetal  |   14.007000 |                -210.1 |                -195.8 |        
+             8 | nonmetal  |   15.999000 |                  -218 |                  -183 |        
+          1000 | metalloid |    1.000000 |                    10 |                   100 |        
+(9 rows)
+periodic_table=> ALTER TABLE properties ADD FOREIGN KEY(type_id) REFERENCES types(type_id);
+ALTER TABLE
+periodic_table=> \d properties
+                           Table "public.properties"
+        Column         |         Type          | Collation | Nullable | Default 
+-----------------------+-----------------------+-----------+----------+---------
+ atomic_number         | integer               |           | not null | 
+ type                  | character varying(30) |           | not null | 
+ atomic_mass           | numeric(9,6)          |           | not null | 
+ melting_point_celsius | numeric               |           | not null | 
+ boiling_point_celsius | numeric               |           | not null | 
+ type_id               | integer               |           |          | 
+Indexes:
+    "properties_pkey" PRIMARY KEY, btree (atomic_number)
+    "properties_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+Foreign-key constraints:
+    "properties_atomic_number_fkey" FOREIGN KEY (atomic_number) REFERENCES elements(atomic_number)
+    "properties_type_id_fkey" FOREIGN KEY (type_id) REFERENCES types(type_id)
+
+
+
+####Each row in your properties table should have a type_id value that links to the correct type from the types table
+eriodic_table=> UPDATE properties SET type_id = types.type_id FROM types WHERE properties.type=types.type;
+UPDATE 9
+periodic_table=> SELECT * FROM properties ;
+ atomic_number |   type    | atomic_mass | melting_point_celsius | boiling_point_celsius | type_id 
+---------------+-----------+-------------+-----------------------+-----------------------+---------
+             1 | nonmetal  |    1.008000 |                -259.1 |                -252.9 |       2
+             2 | nonmetal  |    4.002600 |                -272.2 |                  -269 |       2
+             3 | metal     |    6.940000 |                180.54 |                  1342 |       1
+             4 | metal     |    9.012200 |                  1287 |                  2470 |       1
+             5 | metalloid |   10.810000 |                  2075 |                  4000 |       3
+             6 | nonmetal  |   12.011000 |                  3550 |                  4027 |       2
+             7 | nonmetal  |   14.007000 |                -210.1 |                -195.8 |       2
+             8 | nonmetal  |   15.999000 |                  -218 |                  -183 |       2
+          1000 | metalloid |    1.000000 |                    10 |                   100 |       3
+
+periodic_table=> ALTER TABLE properties ALTER COLUMN type_id SET NOT NULL;
+ALTER TABLE
+periodic_table=> \d properties;
+                           Table "public.properties"
+        Column         |         Type          | Collation | Nullable | Default 
+-----------------------+-----------------------+-----------+----------+---------
+ atomic_number         | integer               |           | not null | 
+ type                  | character varying(30) |           | not null | 
+ atomic_mass           | numeric(9,6)          |           | not null | 
+ melting_point_celsius | numeric               |           | not null | 
+ boiling_point_celsius | numeric               |           | not null | 
+ type_id               | integer               |           | not null | 
+Indexes:
+    "properties_pkey" PRIMARY KEY, btree (atomic_number)
+    "properties_atomic_number_key" UNIQUE CONSTRAINT, btree (atomic_number)
+Foreign-key constraints:
+    "properties_atomic_number_fkey" FOREIGN KEY (atomic_number) REFERENCES elements(atomic_number)
+    "properties_type_id_fkey" FOREIGN KEY (type_id) REFERENCES types(type_id)
+
+####You should capitalize the first letter of all the symbol values in the elements table. Be careful to only capitalize the letter and not change any others
+
+periodic_table=> UPDATE elements SET symbol = initcap(symbol);
+UPDATE 9
+periodic_table=> SELECT * FROM elements ;
+ atomic_number | symbol |   name    
+---------------+--------+-----------
+             1 | H      | Hydrogen
+             2 | He     | Helium
+             3 | Li     | Lithium
+             4 | Be     | Beryllium
+             5 | B      | Boron
+             6 | C      | Carbon
+             7 | N      | Nitrogen
+             8 | O      | Oxygen
+          1000 | Mt     | moTanium
+(9 rows)
+####You should remove all the trailing zeros after the decimals from each row of the atomic_mass column. You may need to adjust a data type to DECIMAL for this. 
+
+periodic_table=> UPDATE properties SET atomic_mass=trim(trailing'00' FROM atomic_mass::TEXT)::DECIMAL;
+UPDATE 9
+periodic_table=> SELECT * FROM properties ;
+ atomic_number |   type    | atomic_mass | melting_point_celsius | boiling_point_celsius | type_id 
+---------------+-----------+-------------+-----------------------+-----------------------+---------
+             1 | nonmetal  |       1.008 |                -259.1 |                -252.9 |       2
+             2 | nonmetal  |      4.0026 |                -272.2 |                  -269 |       2
+             3 | metal     |        6.94 |                180.54 |                  1342 |       1
+             4 | metal     |      9.0122 |                  1287 |                  2470 |       1
+             5 | metalloid |       10.81 |                  2075 |                  4000 |       3
+             6 | nonmetal  |      12.011 |                  3550 |                  4027 |       2
+             7 | nonmetal  |      14.007 |                -210.1 |                -195.8 |       2
+             8 | nonmetal  |      15.999 |                  -218 |                  -183 |       2
+          1000 | metalloid |           1 |                    10 |                   100 |       3
+(9 rows)
+#The :: operator in PostgreSQL is called the Type Cast operator, and it is used to convert a value from one data type to another.
+
+####You should add the element with atomic number 9 to your database. Its name is Fluorine, symbol is F, mass is 18.998, melting point is -220, boiling point is -188.1, and it is a nonmetal
+periodic_table=> INSERT INTO elements(atomic_number, symbol, name) VALUES(9, 'F', 'Fluorine');
+INSERT 0 1
+periodic_table=> INSERT INTO properties(atomic_number, type, atomic_mass, melting_point_celsius, boiling_point_celsius, type_id) VALUES(9, 'nonmetal', 18.998, -220, -188.1, (SELECT type_id FROM types WHERE type='nonmetal'));
+
+####You should add the element with atomic number 10 to your database. Its name is Neon, symbol is Ne, mass is 20.18, melting point is -248.6, boiling point is -246.1, and it is a nonmetal
+periodic_table=> INSERT INTO elements (atomic_number, symbol, name) VALUES(10, 'Ne', 'Neon');
+INSERT 0 1
+periodic_table=> INSERT INTO properties(atomic_number, type, atomic_mass, melting_point_celsius, boiling_point_celsius, type_id) VALUES(10, 'nonmetal', 20.18, -248.6, -246.1, (SELECT type_id FROM types WHERE type='nonmetal'));
+INSERT 0 1
+
+####You should delete the non existent element, whose atomic_number is 1000, from the two tables
+
+periodic_table=> DELETE FROM properties WHERE atomic_number=1000;
+DELETE 1
+periodic_table=> DELETE FROM elements WHERE atomic_number=1000;
+DELETE 1
+
