@@ -1,4 +1,4 @@
-#**Number guessing game project**
+# **Number guessing game project**
 
 Instructions
 To complete this project, I needed to 
