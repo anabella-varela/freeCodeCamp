@@ -1,4 +1,4 @@
-**Number guessing game project**
+# **Number guessing game project**
 
 Instructions
 To complete this project, I needed to 
@@ -11,3 +11,4 @@ To complete that I have attached:
 - number_guess_low-performance.sh is the first program I made. Althougth it works it has a lot of issues of low performance
 - number_guess.sh is the bash file with the impruved program
 - Tasks_and_answers are some code that I used when creating the database
+
