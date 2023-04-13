@@ -8,5 +8,6 @@ To complete this project, I needed to
 
 To complete that I have attached:
 - number_guess.sql is a psql dump of the database I made
-- number_guess.sh is the bash file with the program
-- Tasks_and_answer are some code that I used when creating the database
+- number_guess_low-performance.sh is the first program I made. Althougth it works it has a lot of issues of low performance
+- number_guess.sh is the bash file with the impruved program
+- Tasks_and_answers are some code that I used when creating the database
